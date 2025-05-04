@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Memes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #memeCanvas {
+      border: 2px solid #000;
+      margin-top: 20px;
+    }
+    #controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    input[type="file"], input[type="text"], input[type="number"], button {
+      margin: 10px;
+      padding: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Generador de Memes</h1>
+  <div id="controls">
+    <input type="file" id="imageInput" accept="image/*">
+    <input type="text" id="topText" placeholder="Texto superior">
+    <input type="number" id="topTextSize" placeholder="Tamaño texto superior" value="40">
+    <input type="text" id="bottomText" placeholder="Texto inferior">
+    <input type="number" id="bottomTextSize" placeholder="Tamaño texto inferior" value="40">
+<p>Grosor del Borde:</p>
+    <input type="number" id="borderThickness" placeholder="Grosor del borde" value="2">
+    <button id="generateMeme">Generar Meme</button>
+    <button id="downloadMeme">Descargar Meme</button>
+  </div>
+<h4>Pega tu Imagen Aqui:</h4>
+  <canvas id="memeCanvas"></canvas>
+
+  <script>
+ const canvas = document.getElementById('memeCanvas');
+const ctx = canvas.getContext('2d');
+const imageInput = document.getElementById('imageInput');
+const topTextInput = document.getElementById('topText');
+const topTextSizeInput = document.getElementById('topTextSize');
+const bottomTextInput = document.getElementById('bottomText');
+const bottomTextSizeInput = document.getElementById('bottomTextSize');
+const borderThicknessInput = document.getElementById('borderThickness');
+const generateMemeButton = document.getElementById('generateMeme');
+const downloadMemeButton = document.getElementById('downloadMeme');
+
+let image = null; // Imagen global
+let draggingText = null; // Texto que se está arrastrando
+
+const textLayers = [
+  { type: 'top', y: 50, text: "", size: 40 },
+  { type: 'bottom', y: null, text: "", size: 40 }
+];
+
+// Evento para pegar imágenes desde el portapapeles
+document.addEventListener('paste', (event) => {
+  const items = event.clipboardData.items;
+
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.startsWith('image/')) {
+      const file = items[i].getAsFile();
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        image = new Image(); // Actualizamos la imagen global
+        image.src = reader.result;
+
+        image.onload = () => {
+          // Ajustar el tamaño del canvas
+          const minWidth = 800;
+          const minHeight = 600;
+          canvas.width = Math.max(image.width, minWidth);
+          canvas.height = Math.max(image.height, minHeight);
+
+          textLayers[1].y = canvas.height - 50; // Ajustar texto inferior
+          renderMeme(); // Renderizamos con la nueva imagen
+        };
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+});
+
+// Cargar imagen desde archivo
+imageInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    image = new Image();
+    image.src = reader.result;
+
+    image.onload = () => {
+      const minWidth = 800;
+      const minHeight = 600;
+      canvas.width = Math.max(image.width, minWidth);
+      canvas.height = Math.max(image.height, minHeight);
+
+      textLayers[1].y = canvas.height - 50; // Ajustar texto inferior
+      renderMeme();
+    };
+  };
+
+  if (file) {
+    reader.readAsDataURL(file);
+  }
+});
+
+// Actualizar valores de texto y grosor de borde
+function updateTextValues() {
+  textLayers[0].text = topTextInput.value || "";
+  textLayers[0].size = parseInt(topTextSizeInput.value, 10) || 40;
+  textLayers[1].text = bottomTextInput.value || "";
+  textLayers[1].size = parseInt(bottomTextSizeInput.value, 10) || 40;
+}
+
+// Renderizar el meme
+function renderMeme() {
+  if (image) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = parseInt(borderThicknessInput.value, 10) || 2;
+
+    // Dibujar textos
+    textLayers.forEach((layer) => {
+      if (layer.text) {
+        ctx.font = `${layer.size}px Impact`;
+        ctx.fillText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
+        ctx.strokeText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
+      }
+    });
+  }
+}
+
+// Arrastrar texto para moverlo verticalmente
+canvas.addEventListener('mousedown', (e) => {
+  const { offsetY } = e;
+  draggingText = textLayers.find(
+    (layer) => offsetY >= layer.y - layer.size && offsetY <= layer.y
+  );
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (draggingText) {
+    draggingText.y = e.offsetY;
+    renderMeme();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  draggingText = null;
+});
+
+// Botón para generar el meme
+generateMemeButton.addEventListener('click', () => {
+  updateTextValues();
+  renderMeme();
+});
+
+// Botón para descargar el meme
+downloadMemeButton.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = 'meme.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+</script>
+</body>
+</html>
