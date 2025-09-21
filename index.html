@@ -1,57 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Memes</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 20px;
-      background-color: #f0f0f0;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    #memeCanvas {
-      border: 2px solid #000;
-      margin-top: 20px;
-    }
-    #controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    input[type="file"], input[type="text"], input[type="number"], button {
-      margin: 10px;
-      padding: 5px;
-      font-size: 16px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Meme Studio iOS26</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+margin: 0;
+font-family: 'SF Pro Display', 'Segoe UI', sans-serif;
+background: linear-gradient(135deg, #f8dce3, #d0f0e0, #e0e7ff);
+background-size: 400% 400%;
+animation: gradientShift 15s ease infinite;
+display: flex;
+height: 100vh;
+overflow: hidden;
+}
+
+@keyframes gradientShift {
+0% { background-position: 0% 50%; }
+50% { background-position: 100% 50%; }
+100% { background-position: 0% 50%; }
+}
+
+.glass-panel {
+backdrop-filter: blur(20px);
+background: rgba(255, 255, 255, 0.2);
+border-radius: 20px;
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+border: 1px solid rgba(255, 255, 255, 0.3);
+padding: 30px;
+width: 320px;
+display: flex;
+flex-direction: column;
+gap: 20px;
+position: fixed;
+top: 40px;
+left: 40px;
+z-index: 10;
+}
+
+.glass-panel h2 {
+margin: 0;
+font-size: 1.4rem;
+color: #333;
+}
+
+label {
+font-size: 0.9rem;
+color: #333;
+}
+
+input[type="text"],
+input[type="file"] {
+padding: 10px;
+border-radius: 12px;
+border: none;
+background: rgba(255, 255, 255, 0.6);
+font-size: 0.9rem;
+color: #333;
+}
+
+.slider-group {
+display: flex;
+flex-direction: column;
+}
+
+.slider-label {
+display: flex;
+justify-content: space-between;
+font-size: 0.85rem;
+color: #333;
+}
+
+input[type="range"] {
+-webkit-appearance: none;
+height: 6px;
+border-radius: 3px;
+background: #ccc;
+outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background: #4ade80;
+cursor: pointer;
+box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.floating-button {
+padding: 12px 20px;
+background: linear-gradient(135deg, #4ade80, #22c55e);
+border: none;
+border-radius: 30px;
+font-weight: bold;
+color: white;
+cursor: pointer;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.floating-button:hover {
+transform: translateY(-3px);
+box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.main {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+margin-left: 380px;
+}
+
+canvas {
+border-radius: 20px;
+box-shadow: 0 0 30px rgba(0,0,0,0.2);
+border: 2px solid #ddd;
+max-width: 80vw;
+max-height: 80vh;
+}
+</style>
 </head>
 <body>
-  <h1>Generador de Memes</h1>
-  <div id="controls">
-    <input type="file" id="imageInput" accept="image/*">
-    <input type="text" id="topText" placeholder="Texto superior">
-    <input type="number" id="topTextSize" placeholder="TamaÒo texto superior" value="40">
-    <input type="text" id="bottomText" placeholder="Texto inferior">
-    <input type="number" id="bottomTextSize" placeholder="TamaÒo texto inferior" value="40">
-<p>Grosor del Borde:</p>
-    <input type="number" id="borderThickness" placeholder="Grosor del borde" value="2">
-    <button id="generateMeme">Generar Meme</button>
-    <button id="downloadMeme">Descargar Meme</button>
-  </div>
-<h4>Pega tu Imagen Aqui:</h4>
-  <canvas id="memeCanvas"></canvas>
 
-  <script>
- const canvas = document.getElementById('memeCanvas');
+<div class="glass-panel">
+<h2>üñºÔ∏è Meme Studio</h2>
+
+<label>Imagen</label>
+<input type="file" id="imageInput" accept="image/*">
+
+<label>Texto superior</label>
+<input type="text" id="topText">
+
+<div class="slider-group">
+<div class="slider-label">
+<span>Tama√±o texto superior</span>
+<span id="topSizeValue">40</span>
+</div>
+<input type="range" id="topTextSize" min="10" max="100" value="40">
+</div>
+
+<label>Texto inferior</label>
+<input type="text" id="bottomText">
+
+<div class="slider-group">
+<div class="slider-label">
+<span>Tama√±o texto inferior</span>
+<span id="bottomSizeValue">40</span>
+</div>
+<input type="range" id="bottomTextSize" min="10" max="100" value="40">
+</div>
+
+<div class="slider-group">
+<div class="slider-label">
+<span>Grosor del borde</span>
+<span id="borderValue">2</span>
+</div>
+<input type="range" id="borderThickness" min="1" max="10" value="2">
+</div>
+
+<button class="floating-button" id="generateMeme">Generar Meme</button>
+<button class="floating-button" id="downloadMeme">Descargar Meme</button>
+</div>
+
+<div class="main">
+<canvas id="memeCanvas"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById('memeCanvas');
 const ctx = canvas.getContext('2d');
 const imageInput = document.getElementById('imageInput');
 const topTextInput = document.getElementById('topText');
@@ -62,133 +182,117 @@ const borderThicknessInput = document.getElementById('borderThickness');
 const generateMemeButton = document.getElementById('generateMeme');
 const downloadMemeButton = document.getElementById('downloadMeme');
 
-let image = null; // Imagen global
-let draggingText = null; // Texto que se est· arrastrando
+const topSizeValue = document.getElementById('topSizeValue');
+const bottomSizeValue = document.getElementById('bottomSizeValue');
+const borderValue = document.getElementById('borderValue');
+
+topTextSizeInput.addEventListener('input', () => {
+topSizeValue.textContent = topTextSizeInput.value;
+});
+
+bottomTextSizeInput.addEventListener('input', () => {
+bottomSizeValue.textContent = bottomTextSizeInput.value;
+});
+
+borderThicknessInput.addEventListener('input', () => {
+borderValue.textContent = borderThicknessInput.value;
+});
+
+let image = null;
+const scaleFactor = 2;
 
 const textLayers = [
-  { type: 'top', y: 50, text: "", size: 40 },
-  { type: 'bottom', y: null, text: "", size: 40 }
+{ type: 'top', y: 100, text: "", size: 40 },
+{ type: 'bottom', y: null, text: "", size: 40 }
 ];
 
-// Evento para pegar im·genes desde el portapapeles
-document.addEventListener('paste', (event) => {
-  const items = event.clipboardData.items;
+function loadImage(file) {
+const reader = new FileReader();
+reader.onload = () => {
+image = new Image();
+image.src = reader.result;
+image.onload = () => {
+canvas.width = image.width * scaleFactor;
+canvas.height = image.height * scaleFactor;
+textLayers[1].y = canvas.height - 100;
+renderMeme();
+};
+};
+if (file) reader.readAsDataURL(file);
+}
 
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.startsWith('image/')) {
-      const file = items[i].getAsFile();
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        image = new Image(); // Actualizamos la imagen global
-        image.src = reader.result;
-
-        image.onload = () => {
-          // Ajustar el tamaÒo del canvas
-          const minWidth = 800;
-          const minHeight = 600;
-          canvas.width = Math.max(image.width, minWidth);
-          canvas.height = Math.max(image.height, minHeight);
-
-          textLayers[1].y = canvas.height - 50; // Ajustar texto inferior
-          renderMeme(); // Renderizamos con la nueva imagen
-        };
-      };
-
-      if (file) {
-        reader.readAsDataURL(file);
-      }
-    }
-  }
-});
-
-// Cargar imagen desde archivo
 imageInput.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    image = new Image();
-    image.src = reader.result;
-
-    image.onload = () => {
-      const minWidth = 800;
-      const minHeight = 600;
-      canvas.width = Math.max(image.width, minWidth);
-      canvas.height = Math.max(image.height, minHeight);
-
-      textLayers[1].y = canvas.height - 50; // Ajustar texto inferior
-      renderMeme();
-    };
-  };
-
-  if (file) {
-    reader.readAsDataURL(file);
-  }
+loadImage(event.target.files[0]);
 });
 
-// Actualizar valores de texto y grosor de borde
+document.addEventListener('paste', (event) => {
+const items = event.clipboardData.items;
+for (let item of items) {
+if (item.type.startsWith('image/')) {
+loadImage(item.getAsFile());
+break;
+}
+}
+});
+
 function updateTextValues() {
-  textLayers[0].text = topTextInput.value || "";
-  textLayers[0].size = parseInt(topTextSizeInput.value, 10) || 40;
-  textLayers[1].text = bottomTextInput.value || "";
-  textLayers[1].size = parseInt(bottomTextSizeInput.value, 10) || 40;
+textLayers[0].text = topTextInput.value || "";
+textLayers[0].size = parseInt(topTextSizeInput.value, 10) * scaleFactor;
+
+textLayers[1].text = bottomTextInput.value || ""; // ‚Üê Esta l√≠nea faltaba
+textLayers[1].size = parseInt(bottomTextSizeInput.value, 10) * scaleFactor;
 }
 
-// Renderizar el meme
+
 function renderMeme() {
-  if (image) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+if (!image) return;
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.lineWidth = parseInt(borderThicknessInput.value, 10) || 2;
+ctx.fillStyle = 'white';
+ctx.strokeStyle = 'black';
+ctx.textAlign = 'center';
+ctx.lineWidth = parseInt(borderThicknessInput.value, 10) * scaleFactor;
 
-    // Dibujar textos
-    textLayers.forEach((layer) => {
-      if (layer.text) {
-        ctx.font = `${layer.size}px Impact`;
-        ctx.fillText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
-        ctx.strokeText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
-      }
-    });
-  }
+textLayers.forEach(layer => {
+if (layer.text) {
+ctx.font = `${layer.size}px Impact`;
+ctx.fillText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
+ctx.strokeText(layer.text.toUpperCase(), canvas.width / 2, layer.y);
+}
+});
 }
 
-// Arrastrar texto para moverlo verticalmente
+generateMemeButton.addEventListener('click', () => {
+updateTextValues();
+renderMeme();
+});
+
+downloadMemeButton.addEventListener('click', () => {
+const link = document.createElement('a');
+link.download = 'meme_hd.png';
+link.href = canvas.toDataURL('image/png');
+link.click();
+});
+
+let draggingText = null;
 canvas.addEventListener('mousedown', (e) => {
-  const { offsetY } = e;
-  draggingText = textLayers.find(
-    (layer) => offsetY >= layer.y - layer.size && offsetY <= layer.y
-  );
+const { offsetY } = e;
+draggingText = textLayers.find(layer =>
+offsetY >= layer.y - layer.size && offsetY <= layer.y
+);
 });
 
 canvas.addEventListener('mousemove', (e) => {
-  if (draggingText) {
-    draggingText.y = e.offsetY;
-    renderMeme();
-  }
+if (draggingText) {
+draggingText.y = e.offsetY;
+renderMeme();
+}
 });
 
 canvas.addEventListener('mouseup', () => {
-  draggingText = null;
-});
-
-// BotÛn para generar el meme
-generateMemeButton.addEventListener('click', () => {
-  updateTextValues();
-  renderMeme();
-});
-
-// BotÛn para descargar el meme
-downloadMemeButton.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = 'meme.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+draggingText = null;
 });
 </script>
 </body>
-</html>
+  </html>
